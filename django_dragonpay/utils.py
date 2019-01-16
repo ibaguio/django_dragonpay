@@ -19,7 +19,8 @@ def get_dragonpay_digest(str_or_list):
 
     # Append the MERCHANT_PASSWORD to the string and return the sha1 digest
     return sha1(
-        str_or_list + ':' + settings.DRAGONPAY_PASSWORD).hexdigest()
+        str(str_or_list + ':' + settings.DRAGONPAY_PASSWORD).encode('utf-8')
+    ).hexdigest()
 
 
 # http://stackoverflow.com/a/21928790
@@ -34,7 +35,7 @@ class AESCipher(object):
         raw = self._pad(raw)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw))
+        return base64.b64encode(iv + cipher.encrypt(raw.encode('utf-8')))
 
     def decrypt(self, enc):
         enc = base64.b64decode(enc)

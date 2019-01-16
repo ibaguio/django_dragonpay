@@ -1,0 +1,22 @@
+{% extends 'dragonpay_soapxml/base.xml' %}
+
+{% block body %}
+<tns:SplitPayment xmlns="http://api.dragonpay.ph/">
+  <tns:merchantId>{{ main_merchant_id }}</tns:merchantId>
+  <tns:password>{{ main_merchant_secret }}</tns:password>
+  <tns:refno>{{ txn_refno }}</tns:refno>
+  <tns:details>
+    <tns:SplitPaymentDetails>
+      <tns:merchantId>{{ main_merchant_id }}</tns:merchantId>
+      <tns:amount>{{ main_merchant_amount }}</tns:amount> <!-- Make this double -->
+      <tns:description>{{ main_merchant_description }}</tns:description>
+    </tns:SplitPaymentDetails>
+    <tns:SplitPaymentDetails>
+      <tns:merchantId>{{ sub_merchant_id }}</tns:merchantId>
+      <tns:amount>{{ sub_merchant_amount }}</tns:amount> <!-- Make this double -->
+      <tns:description>{{ sub_merchant_description }}</tns:description>
+    </tns:SplitPaymentDetails>
+  </tns:details>
+</tns:SplitPayment>
+
+{% endblock %}

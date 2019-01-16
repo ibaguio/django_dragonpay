@@ -103,7 +103,7 @@ def get_txn_url_from_token(token, proc_id=None):
     if proc_id:
         d['procid'] = proc_id
 
-    return dp_settings.DRAGONPAY_PAY_URL + '?' + urllib.urlencode(d)
+    return dp_settings.DRAGONPAY_PAY_URL + '?' + urllib.parse.urlencode(d)
 
 
 def get_txn_token_url(amount, description, email, proc_id=None, **params):
@@ -131,7 +131,7 @@ def get_txn_token(amount, description, email, txn_id=None, **params):
 
     logger.debug('params %s', params)
     # include the params in the context
-    for key, value in params.iteritems():
+    for key, value in params.items():
         if dp_settings.DRAGONPAY_ENCRYPT_PARAMS:
             # we cannot have a value of more than 47 chars since the
             # equivalent encrypted value will be more than 80 chars
@@ -140,7 +140,7 @@ def get_txn_token(amount, description, email, txn_id=None, **params):
 
             # Encrypt the params to obfuscate the payload
             logger.debug('Encrypting %s', value)
-            value = encrypt_data(value)
+            value = encrypt_data(value).decode('utf-8')
 
         else:
             if len(value) > 80:
@@ -396,3 +396,49 @@ def request_payout_ex(
                 response_code)
 
     return response_code, txn_id
+
+
+def split_payments(refno, main_merchant_data, sub_merchant_data):
+    '''
+        Request to label transaction as a 'Split Payment' so the total amount
+        is split as requested in the merchant data passed
+
+        merchant
+
+        main_merchant_data - {
+                            'merchant_id': '', < string >
+                            'amount': '', <float> / double?
+                            'description': '', < string >
+                            'secret':, <string>
+                        }
+
+        sub_merchant_data - {
+                            'merchant_id': '', < string >
+                            'amount': '', <float> / double?
+                            'description': '', < string >
+                        }
+    '''
+
+    # TODO Validate the passed arguments
+    context = {
+        'main_merchant_id': main_merchant_data['merchant_id'],
+        'main_merchant_amount': main_merchant_data['amount'],
+        'main_merchant_secret': main_merchant_data['secret'],
+        'main_merchant_description': main_merchant_data['description'],
+
+        'sub_merchant_id': sub_merchant_data['merchant_id'],
+        'sub_merchant_amount': sub_merchant_data['amount'],
+        'sub_merchant_description': sub_merchant_data['description'],
+
+        'txn_refno': refno
+    }
+
+    response = _dragonpay_get_wrapper('SplitPayment', context=context)
+
+    if response == '0':
+        logger.debug('[%s] Split Payments request success', refno)
+        return True
+
+    else:
+        return False
+        logger.debug('[%s] Split Payments failed: %s', refno, response)
