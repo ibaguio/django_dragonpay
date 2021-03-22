@@ -13,7 +13,7 @@ setup(
     install_requires=[
         'requests>=2.11.1',
         'Django>=1.8.0',
-        'lxml==4.6.2',
+        'lxml==4.6.3',
         'pycrypto>=2.6.1',
     ],
     keywords='django dragonpay payment',
